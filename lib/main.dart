@@ -1,64 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' as fb;
 import 'package:isar/isar.dart';
-import 'package:isar_test/file.dart';
+import 'package:isar_test/todo.dart';
 
 void main() async {
-  final isar = await Isar.open(
-    [
-      UserSchema,
-    ],
-    inspector: true,
+  final isar = await Isar.open([
+    TODOSchema,
+  ]);
+
+  runApp(
+    fb.RepositoryProvider<Isar>(
+      create: (_) => isar,
+      child: const MyApp(),
+    ),
   );
-
-  final newUser = User()
-    ..name = 'Jane Doe'
-    ..age = 36;
-
-  await isar.writeTxn(() async {
-    await isar.users.put(newUser); // insert & update
-  });
-
-  final existingUser = await isar.users.get(newUser.id); // get
-
-  await isar.writeTxn(() async {
-    await isar.users.delete(existingUser!.id); // delete
-  });
-
-  runApp(MyApp(isar: isar));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.isar});
-
-  final Isar isar;
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
   Widget build(BuildContext context) {
+    //final repo = RepositoryProvider.of<Isar>(context);
+    final isar = context.read<Isar>();
+
+    final userChanged = isar.tODOs.where().findAll().asStream();
+
     return MaterialApp(
-      title: 'Material App',
+      title: 'TODO App',
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Material App Bar'),
         ),
         body: Center(
-          child: FutureBuilder(
-              future: isar.users.where().findAll(),
-              builder: (context, AsyncSnapshot<List<User>> users) {
-                if (users.hasData) {
-                  return ListView.builder(
-                    itemCount: users.requireData.length,
-                    itemBuilder: (context, index) {
-                      final user = users.requireData[index];
-                      return ListTile(
-                        title: Text(user.name.toString()),
-                        subtitle: Text(user.age.toString()),
-                      );
-                    },
-                  );
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              }),
+          child: StreamBuilder(
+            stream: userChanged,
+            //FutureBuilder(
+            // future: isar.tODOs.where().findAll(),
+            builder: (context, AsyncSnapshot<List<TODO>> users) {
+              if (users.hasData) {
+                return ListView.builder(
+                  itemCount: users.requireData.length,
+                  itemBuilder: (context, index) {
+                    final user = users.requireData[index];
+                    return ListTile(
+                      title: Text(user.createdAt.toString()),
+                      subtitle: Text(user.description.toString()),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () async {
+                          await isar.writeTxn(
+                            () async => isar.tODOs.delete(user.id),
+                          );
+                          setState(() {});
+                        },
+                      ),
+                    );
+                  },
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final newTodo = TODO()
+              ..title = 'New TODO'
+              ..description = 'New TODO Description'
+              ..done = false
+              ..createdAt = DateTime.now();
+
+            await isar.writeTxn(() async {
+              await isar.tODOs.put(newTodo); // insert & update
+            });
+
+            //final existingUser = await isar.users.get(newUser.id); // get
+
+            //await isar.writeTxn(() async {
+            //  await isar.users.delete(existingUser!.id); // delete
+            //});
+            setState(() {});
+          },
+          child: const Icon(Icons.add),
         ),
       ),
     );

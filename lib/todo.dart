@@ -1,12 +1,12 @@
 import 'package:isar/isar.dart';
 
-part 'file.g.dart';
+part 'todo.g.dart';
 
 @collection
-class User {
+class TODO {
   Id id = Isar.autoIncrement; // you can also use id = null to auto increment
-
-  String? name;
-
-  int? age;
+  late String title;
+  late String description;
+  late bool done;
+  late DateTime createdAt;
 }
