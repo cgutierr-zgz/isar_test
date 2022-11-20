@@ -1,21 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart' as fb;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:isar/isar.dart';
+import 'package:isar_test/cubit/todos_cubit.dart';
 import 'package:isar_test/todo.dart';
 
 void main() async {
   final isar = await Isar.open([
     TODOSchema,
   ]);
-
+/*
   runApp(
     fb.RepositoryProvider<Isar>(
       create: (_) => isar,
       child: const MyApp(),
     ),
+  );*/
+
+  runApp(
+    BlocProvider(
+      create: (context) => TodosCubit(isar),
+      child: const MyApp(),
+    ),
   );
 }
 
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: BlocBuilder<TodosCubit, List<TODO>>(
+          builder: (context, state) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(state.length, (index) {
+                  final item = state[index];
+
+                  return Row(
+                    children: [
+                      Text(state[index].title),
+                      IconButton(
+                        onPressed: () => context.read<TodosCubit>().deleteTodo(item.id),
+                        icon: const Icon(Icons.delete),
+                      )
+                    ],
+                  );
+                }),
+              ),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: const Text('add'),
+          onPressed: () => context.read<TodosCubit>().addTodo(),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+/*
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -27,7 +82,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     //final repo = RepositoryProvider.of<Isar>(context);
-    final isar = context.read<Isar>();
+    final isar = context.watch<Isar>();
 
     final userChanged = isar.tODOs.where().findAll().asStream();
 
@@ -94,3 +149,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+*/
