@@ -9,6 +9,7 @@ class TodosCubit extends Cubit<List<TODO>> {
     _collection.watchLazy(fireImmediately: true).listen(
       (event) async {
         final data = await _collection.where().findAll();
+
         emit(data);
       },
     );
