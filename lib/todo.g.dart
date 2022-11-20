@@ -81,12 +81,13 @@ TODO _tODODeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = TODO();
-  object.createdAt = reader.readDateTime(offsets[0]);
-  object.description = reader.readString(offsets[1]);
-  object.done = reader.readBool(offsets[2]);
+  final object = TODO(
+    createdAt: reader.readDateTime(offsets[0]),
+    description: reader.readString(offsets[1]),
+    done: reader.readBool(offsets[2]),
+    title: reader.readString(offsets[3]),
+  );
   object.id = id;
-  object.title = reader.readString(offsets[3]);
   return object;
 }
 

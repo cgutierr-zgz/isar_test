@@ -26,15 +26,25 @@ class TodosCubit extends Cubit<List<TODO>> {
     emit(data);
   }
 
-  Future<void> addTodo()async {
+  Future<void> addTodo() async {
     await _isar.writeTxn(() {
       return _collection.put(
-        TODO()
-          ..createdAt = DateTime.now()
-          ..title = 'titl12e'
-          ..done = false
-          ..description = 'Desc1',
+        TODO(
+          title: 'Title',
+          description: 'Desc',
+          done: false,
+          createdAt: DateTime.now(),
+        ),
       );
+    });
+    await getData();
+  }
+
+  Future<void> deleteAll() async {
+    final items = List.generate(state.length, (index) => state[index].id);
+
+    await _isar.writeTxn(() {
+      return _collection.deleteAll(items);
     });
     await getData();
   }

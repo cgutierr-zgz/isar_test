@@ -34,21 +34,30 @@ class MyApp extends StatelessWidget {
         body: BlocBuilder<TodosCubit, List<TODO>>(
           builder: (context, state) {
             return SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(state.length, (index) {
-                  final item = state[index];
+              child: SafeArea(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (state.isNotEmpty)
+                      TextButton(
+                        child: const Text('deelete all'),
+                        onPressed: () => context.read<TodosCubit>().deleteAll(),
+                      ),
+                    ...List.generate(state.length, (index) {
+                      final item = state[index];
 
-                  return Row(
-                    children: [
-                      Text(state[index].title),
-                      IconButton(
-                        onPressed: () => context.read<TodosCubit>().deleteTodo(item.id),
-                        icon: const Icon(Icons.delete),
-                      )
-                    ],
-                  );
-                }),
+                      return Row(
+                        children: [
+                          Text('${item.title}\n${item.id}'),
+                          IconButton(
+                            onPressed: () => context.read<TodosCubit>().deleteTodo(item.id),
+                            icon: const Icon(Icons.delete),
+                          )
+                        ],
+                      );
+                    }),
+                  ],
+                ),
               ),
             );
           },

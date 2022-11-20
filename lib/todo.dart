@@ -4,9 +4,16 @@ part 'todo.g.dart';
 
 @collection
 class TODO {
+  TODO({
+    required this.title,
+    required this.description,
+    required this.done,
+    required this.createdAt,
+  });
+
   Id id = Isar.autoIncrement; // you can also use id = null to auto increment
-  late String title;
-  late String description;
-  late bool done;
-  late DateTime createdAt;
+  final String title;
+  final String description;
+  final bool done;
+  final DateTime createdAt;
 }
